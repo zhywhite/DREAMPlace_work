@@ -1,7 +1,7 @@
 {
 "aux_input" : {
     "descripton" : "input .aux file", 
-    "default" : "", 
+    "default" : "benchmarks/ispd2005/adaptec1/adaptec1.aux", 
     "required" : "required for Bookshelf"
     }, 
 "lef_input" : {
@@ -146,23 +146,23 @@
     },
 "routability_opt_flag" : {
     "descripton" : "whether enable routability optimization", 
-    "default" : 0
+    "default" : 1
     },
 "route_num_bins_x" : {
     "descripton" : "number of routing grids/tiles", 
-    "default" : 512
+    "default" : 256
     },
 "route_num_bins_y" : {
     "descripton" : "number of routing grids/tiles", 
-    "default" : 512
+    "default" : 256
     },
 "node_area_adjust_overflow" : {
     "descripton" : "the overflow where to adjust node area", 
-    "default" : 0.15
+    "default" : 0.2
     },
 "max_num_area_adjust" : {
     "descripton" : "maximum times to adjust node area", 
-    "default" : 3
+    "default" : 5
     },
 "adjust_nctugr_area_flag" : {
     "descripton" : "whether use NCTUgr congestion map to guide area adjustment", 
@@ -170,15 +170,15 @@
     },
 "adjust_ml_congestion_area_flag" : {
     "descripton" : "whether use machine learning congestion map to guide area adjustment", 
-    "default" : 0
+    "default" : 1
     },
 "adjust_rudy_area_flag" : {
     "descripton" : "whether use RUDY/RISA map to guide area adjustment", 
-    "default" : 1
+    "default" : 0
     },
 "adjust_pin_area_flag" : {
     "descripton" : "whether use pin utilization map to guide area adjustment", 
-    "default" : 1
+    "default" : 0
     },
 "area_adjust_stop_ratio" : {
     "descripton" : "area_adjust_stop_ratio", 
@@ -194,7 +194,7 @@
     },
 "num_routing_layers" : {
     "descripton" : "number of metal layers for routing (excluding via layers)", 
-    "default" : 1
+    "default" : 5
     },
 "unit_horizontal_capacity" : {
     "descripton" : "number of horizontal routing tracks per unit distance for all layers (sum)", 
@@ -202,7 +202,7 @@
     },
 "unit_horizontal_capacities" : {
     "descripton" : "number of horizontal routing tracks per unit distance for each layer", 
-    "default" : []
+    "default" : [0.005, 0.005, 0.005]
     },
 "unit_vertical_capacity" : {
     "descripton" : "number of vertical routing tracks per unit distance for all layesr (sum)", 
@@ -210,19 +210,19 @@
     },
 "unit_vertical_capacities" : {
     "descripton" : "number of vertical routing tracks per unit distance for each layer", 
-    "default" : []
+    "default" : [0.005, 0.005, 0.005]
     },
 "unit_pin_capacity" : {
     "descripton" : "number of pins per unit area", 
-    "default" : 0.058
+    "default" : 0.01
     },
 "max_route_opt_adjust_rate" : {
     "descripton" : "max_route_opt_adjust_rate", 
-    "default" : 2.0
+    "default" : 2.5
     },
 "route_opt_adjust_exponent" : {
     "descripton" : "exponent to adjust the routing utilization map", 
-    "default" : 2.0
+    "default" : 2.5
     },
 "pin_stretch_ratio" : {
     "descripton" : "pin_stretch_ratio", 
@@ -234,7 +234,7 @@
     }, 
 "pretrained_ml_congestion_weight_file" : {
     "descripton" : "file path for pretrained weights of the machine learning model", 
-    "default" : ""
+    "default" : "../models/weights_200000.pth"
     }, 
 "deterministic_flag" : {
     "descripton" : "whether require run-to-run determinism, may have efficiency overhead", 

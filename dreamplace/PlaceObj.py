@@ -1050,7 +1050,26 @@ class PlaceObj(nn.Module):
         """
         ############## Your code block begins here ##############
         # hint: You can use the density_map op for fixed_node_map_op
-        return None 
+        ml_congestion_op = ml_congestion.MLCongestion(
+            fixed_node_map_op=self.op_collections.density_map,
+            rudy_utilization_map_op=self.op_collections.rudy_utilization_map_op,
+            pinrudy_utilization_map_op=self.op_collections.pinrudy_utilization_map_op,
+            pin_pos_op=self.op_collections.pin_pos_op,
+            xl=placedb.routing_grid_xl,
+            yl=placedb.routing_grid_yl,
+            xh=placedb.routing_grid_xh,
+            yh=placedb.routing_grid_yh,
+            num_bins_x=placedb.num_routing_grids_x,
+            num_bins_y=placedb.num_routing_grids_y,
+            unit_horizontal_capacity=placedb.unit_horizontal_capacity,
+            unit_vertical_capacity=placedb.unit_vertical_capacity,
+            deterministic_flag=params.deterministic_flag, 
+            pretrained_ml_congestion_weight_file=params.pretrained_ml_congestion_weight_file)           
+
+        def ml_congestion_map_op(pos):
+            return ml_congestion_op(pos)
+
+        return ml_congestion_map_op
         ############## Your code block ends here ################
 
     def build_adjust_node_area(self, params, placedb, data_collections):

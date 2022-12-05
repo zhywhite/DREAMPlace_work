@@ -10,11 +10,14 @@ from torch import nn
 from torch.autograd import Function
 import matplotlib.pyplot as plt
 import pdb
+from scipy import ndimage
+import numpy as np
 
 import dreamplace.ops.rudy.rudy as rudy
 import dreamplace.ops.pinrudy.pinrudy as pinrudy
 ############## Your code block begins here ##############
 # import your ML model 
+from models.gpdl import GPDL
 ############## Your code block ends here ################
 
 class MLCongestion(nn.Module):
@@ -50,12 +53,59 @@ class MLCongestion(nn.Module):
                  pretrained_ml_congestion_weight_file):
         super(MLCongestion, self).__init__()
         ############## Your code block begins here ##############
+        self.fixed_node_map_op = fixed_node_map_op
+        self.rudy_utilization_map_op = rudy_utilization_map_op
+        self.pinrudy_utilization_map_op = pinrudy_utilization_map_op
+        self.pin_pos_op = pin_pos_op
+        self.xl = xl
+        self.xh = xh
+        self.yl = yl
+        self.yh = yh
+        self.num_bins_x = num_bins_x
+        self.num_bins_y = num_bins_y
+        self.unit_horizontal_capacity = unit_horizontal_capacity
+        self.unit_vertical_capacity = unit_vertical_capacity
+        self.pretrained_ml_congestion_weight_file = pretrained_ml_congestion_weight_file
         ############## Your code block ends here ################
 
     def __call__(self, pos):
         return self.forward(pos)
+    
+    # for data process
+    def resize(self, input):
+        dimension = input.shape
+        result = ndimage.zoom(input, (256 / dimension[0], 256 / dimension[1]), order=3)
+        return result
+
+    def std(input):
+        if input.max() == 0:
+            return input
+        else:
+            result = (input-input.min()) / (input.max()-input.min())
+            return result
 
     def forward(self, pos):
         ############## Your code block begins here ##############
-        return None
+
+        # input process
+        fixed_node_map = self.fixed_node_map_op(pos)
+        rudy_utilization_map = self.rudy_utilization_map_op(pos)
+        pin_rudy_utilization_map = self.pinrudy_utilization_map_op(pos)
+        feature_list = []
+        # normalize and process
+        feature_list.append(self.std(self.resize(fixed_node_map)))
+        feature_list.append(self.std(self.resize(rudy_utilization_map)))
+        feature_list.append(self.std(self.resize(pin_rudy_utilization_map)))
+        feature = np.array(feature_list)
+        input = feature.transpose(2, 0, 1).astype(np.float32)
+        
+        # model define
+        model = GPDL()
+        model.load_state_dict(torch.load(self.pretrained_ml_congestion_weight_file)['state_dict'])
+        model.eval()
+  
+        # congestion prediction
+        congestion_map = model(input)
+
+        return congestion_map
         ############## Your code block ends here ################

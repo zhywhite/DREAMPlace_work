@@ -1,6 +1,6 @@
 {
-"aux_input" : "benchmarks/ispd2005/adaptec1/adaptec1.aux", 
-"gpu" : 1,
+"aux_input" : "../benchmarks/ispd2005/adaptec1/adaptec1.aux", 
+"gpu" : 0,
 "num_bins_x" : 512,
 "num_bins_y" : 512,
 "global_place_stages" : [
