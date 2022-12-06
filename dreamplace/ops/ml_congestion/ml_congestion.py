@@ -70,14 +70,14 @@ class MLCongestion(nn.Module):
 
     def __call__(self, pos):
         return self.forward(pos)
-    
+
     # for data process
     def resize(self, input):
         dimension = input.shape
-        result = ndimage.zoom(input, (256 / dimension[0], 256 / dimension[1]), order=3)
+        result = ndimage.zoom(input.cpu().numpy(), (256 / dimension[0], 256 / dimension[1]), order=3)
         return result
 
-    def std(input):
+    def std(self, input):
         if input.max() == 0:
             return input
         else:
@@ -86,26 +86,34 @@ class MLCongestion(nn.Module):
 
     def forward(self, pos):
         ############## Your code block begins here ##############
-
+        print("I am doing ML")
         # input process
         fixed_node_map = self.fixed_node_map_op(pos)
         rudy_utilization_map = self.rudy_utilization_map_op(pos)
         pin_rudy_utilization_map = self.pinrudy_utilization_map_op(pos)
+
+        # print("map_finished")
         feature_list = []
+
         # normalize and process
         feature_list.append(self.std(self.resize(fixed_node_map)))
         feature_list.append(self.std(self.resize(rudy_utilization_map)))
         feature_list.append(self.std(self.resize(pin_rudy_utilization_map)))
         feature = np.array(feature_list)
-        input = feature.transpose(2, 0, 1).astype(np.float32)
-        
-        # model define
-        model = GPDL()
+        input = torch.from_numpy(feature.astype(np.float32).reshape(1,3,256,256))
+        input = input.cuda()
+        # print(input.shape)
+        # print(type(input))
+        # model define & load
+        model = GPDL(in_channels=3,out_channels=1)
         model.load_state_dict(torch.load(self.pretrained_ml_congestion_weight_file)['state_dict'])
         model.eval()
-  
+        model = model.cuda()
+
+        # print("model define finished")
         # congestion prediction
         congestion_map = model(input)
 
+        print("congestion_map compute finished")
         return congestion_map
         ############## Your code block ends here ################

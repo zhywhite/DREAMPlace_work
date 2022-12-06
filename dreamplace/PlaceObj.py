@@ -254,6 +254,8 @@ class PlaceObj(nn.Module):
                 params, placedb, self.data_collections)
             self.op_collections.pin_utilization_map_op = self.build_pin_utilization_map(
                 params, placedb, self.data_collections)
+            self.op_collections.density_map_op = self.build_density_map_op(
+                params, placedb, self.data_collections)
             if params.adjust_nctugr_area_flag: 
                 self.op_collections.nctugr_congestion_map_op = self.build_nctugr_congestion_map(
                     params, placedb, self.data_collections)
@@ -1043,6 +1045,23 @@ class PlaceObj(nn.Module):
                 placedb.routing_grid_size_x),
             params=params,
             placedb=placedb)
+    
+    def build_density_map_op(self, params, placedb, data_collections):
+        density_op = density_map.DensityMap(
+            node_size_x = data_collections.node_size_x,
+            node_size_y = data_collections.node_size_y,
+            xl=placedb.routing_grid_xl,
+            yl=placedb.routing_grid_yl,
+            xh=placedb.routing_grid_xh,
+            yh=placedb.routing_grid_yh,
+            num_bins_x=placedb.num_routing_grids_x,
+            num_bins_y=placedb.num_routing_grids_y,
+            range_list=[[placedb.num_movable_nodes, placedb.num_movable_nodes+placedb.num_terminals]],
+            deterministic_flag=params.deterministic_flag)
+
+        def density_map_op(pos):
+            return density_op(pos)
+        return density_map_op
 
     def build_ml_congestion_map(self, params, placedb, data_collections):
         """
@@ -1051,7 +1070,7 @@ class PlaceObj(nn.Module):
         ############## Your code block begins here ##############
         # hint: You can use the density_map op for fixed_node_map_op
         ml_congestion_op = ml_congestion.MLCongestion(
-            fixed_node_map_op=self.op_collections.density_map,
+            fixed_node_map_op=self.op_collections.density_map_op,
             rudy_utilization_map_op=self.op_collections.rudy_utilization_map_op,
             pinrudy_utilization_map_op=self.op_collections.pinrudy_utilization_map_op,
             pin_pos_op=self.op_collections.pin_pos_op,
@@ -1063,7 +1082,6 @@ class PlaceObj(nn.Module):
             num_bins_y=placedb.num_routing_grids_y,
             unit_horizontal_capacity=placedb.unit_horizontal_capacity,
             unit_vertical_capacity=placedb.unit_vertical_capacity,
-            deterministic_flag=params.deterministic_flag, 
             pretrained_ml_congestion_weight_file=params.pretrained_ml_congestion_weight_file)           
 
         def ml_congestion_map_op(pos):
